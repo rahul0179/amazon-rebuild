@@ -10,25 +10,61 @@ const Shop = () => {
     const [cart, setCart] = useState([])
 
     useEffect(() => {
+        //console.log('product load before fetch');
         fetch('products.json')
             .then(res => res.json())
             .then(data => setProducts(data))
     }, [])
-    const addToCart = (product) => {
-        const newCart = [...cart, product];
-        setCart(newCart);
-        addToDb(product.id)
-
-    }
-
-    useEffect(() => {
-        const storedCart = getStoredCart();
-        for (const id in storedCart) {
-            const addProduct = products.find(product => product.id === id)
-            console.log(addProduct)
+    const addToCart = (selectedProduct) => {
+        let newCart = [];
+        const exists = cart.find(product => product.id === selectedProduct.id)
+        if (!exists) {
+            selectedProduct.quantity = 1;
+            newCart = [...cart, selectedProduct];
+        }
+        else {
+            const rest = cart.filter(product => product.id !== selectedProduct.id)
+            exists.quantity = exists.quantity + 1;
+            newCart = [...rest, exists]
         }
 
-    }, [])
+        setCart(newCart);
+        addToDb(selectedProduct.id)
+
+    }
+    useEffect(() => {
+        const storedCart = getStoredCart();
+        const savedCart = [];
+        for (const id in storedCart) {
+            const addedProduct = products.find(product => product.id === id)
+            if (addedProduct) {
+                const quantity = storedCart[id]
+                addedProduct.quantity = quantity;
+                savedCart.push(addedProduct)
+            }
+
+        }
+        setCart(savedCart)
+
+    }, [products])
+
+    /* useEffect(() => {
+        //console.log('local storage first line');
+        const storedCart = getStoredCart();
+        const savedCart = [];
+        for (const id in storedCart) {
+            const addProduct = products.find(product => product.id === id)
+            if (addProduct) {
+                const quantity = storedCart[id]
+                addProduct.quantity = quantity;
+                savedCart.push(addProduct);
+                //console.log(addProduct);
+            }
+        }
+        setCart(savedCart)
+        console.log('local storage finished');
+
+    }, [products]) */
 
 
 
